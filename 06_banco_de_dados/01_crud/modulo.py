@@ -8,22 +8,22 @@ def cadastrar(session, Pessoa):
     try:
         nome = input("Informe o nome: ").strip().title()
         genero = input("Informe o genero: ").strip()
-        nascimento = input("Informe a data de nascimento (dd/mm/aaaa) ").strip()
+        nascimento = input("Informe a data de nascimento (dd/mm/aaaa): ").strip()
         nascimento = datetime.strptime(nascimento, "%d/%m/%Y").date()
         email = input("Informe o e-mail: ").strip().lower()
 
         pessoas = session.query(Pessoa).filter(Pessoa.email.like(email)).all()
 
         if email in [pessoa.email for pessoa in pessoas]:
-            print("E-mail ja esta cadastrado.")
+            return f"E-mail ja esta cadastrado."
         else:
-            nova_pessoa = Pessoa(nome=nome, nascimento=nascimento, email=email, genero=genero)
+            nova_pessoa = Pessoa(nome = nome, nascimento = nascimento, email = email, genero = genero)
 
-            # inserir into pessoa
-            session.add(nova_pessoa)
-            session.commit()
-            
-            return f"Pessoa {nova_pessoa.nome} cadastrada com suceso"
+        # inserir into pessoa
+        session.add(nova_pessoa)
+        session.commit()
+        
+        return f"Pessoa {nova_pessoa.nome} cadastrada com suceso."
         
     except Exception as e:
         print(f"Não foi possivel cadastrar. {e}.")
@@ -54,8 +54,8 @@ def atualizar(session, Pessoa):
     try:
         print("Escolha o campo q deseja pesquisar: ")
         print("1 - ID")
-        print("1 - E-mail")
-        print("1 - retornar")
+        print("2 - E-mail")
+        print("3 - retornar")
         opcao = input("Opção desejada: ").strip()
         limpar()
         match opcao:
@@ -76,9 +76,9 @@ def atualizar(session, Pessoa):
                 print(f"ID {pessoa.id_pessoa}")
                 print("Qual campo deseja alterar:\n")
                 print(f"1 - Nome: {pessoa.nome}")
-                print(f"1 - E-mail: {pessoa.email}")
-                print(f"1 - Data de nascimento : {pessoa.nascimento.srtftime("%d/%m%Y")}")
-                print(f"1 - Nome: {pessoa.genero}")
+                print(f"2 - E-mail: {pessoa.email}")
+                print(f"3 - Data de nascimento : {pessoa.nascimento.srtftime("%d/%m%Y")}")
+                print(f"4 - Nome: {pessoa.genero}")
                 print(f"5 - Finalizar")
                 campo = input("Campo desejado: ").strip()
                 limpar()
@@ -116,3 +116,48 @@ def atualizar(session, Pessoa):
         
     except Exception as e:
         print(f"Não foi possivel alterar os dados. {e}.")
+
+def deletar(session,Pessoa):
+    id_pessoa = ""
+    email = ""
+    pessoa = ""
+
+    #menu
+    print("informe o campo desejado")
+    print("1 - ID")
+    print("2 - E-mail")
+    print("3 - Retorenar")
+    print("informe o campo desejado")
+    opcao = input("informe o campo q deseja pesquisar: ").strip()
+    limpar()
+    match opcao:
+        case "1":
+            id_pessoa = input("Informe o ID a ser excluido: ").strip()
+            pessoa = session.query(Pessoa).filter_by(id_pessoa=id_pessoa).first()
+        case "2":
+            email = input("Informe o e-mail do cadastro a ser excluido: ").strip().lower()
+            pessoa = session.query(Pessoa).filter_by(email=email).first()
+        case "3":
+            return ""
+        case _:
+            return "Opção invalidA"
+    if pessoa:
+        limpar()
+        print(f"ID {pessoa.id_pessoa}")
+        print(f"ID {pessoa.id_pessoa}")
+        print(f"ID {pessoa.id_pessoa}")
+        print(f"Data de nascimento {pessoa.nascimento.strftime("%d/%m/%Y")}")
+        print({'-'*40})
+        print("1 - Sim")
+        print("1 - Não")
+        excluir = input("Tem certeza de que deseja excluir o registro? ").strip
+        limpar()
+        match excluir:
+            case "1":
+                session.delete(pessoa)
+                session.commit()
+                return "Pessoa deletada com sucesso.😃👍 "
+            case "2":
+                pass
+            case _:
+                return "Opção invalida"

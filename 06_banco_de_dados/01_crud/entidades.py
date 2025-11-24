@@ -14,7 +14,7 @@ def criar_tb_pessoa(engine, Base):
             genero = Column(String ,nullable=True)
   
         Base.metadata.create_all(engine)
-  
+        
         return Pessoa
     
     except Exception as e:
