@@ -100,6 +100,20 @@ def main(page: ft.Page):
                 stream = yt.streams.get_highest_resolution()
 
                 # TODO: fazer if else do stream
+                if stream:
+                    stream.dowload(cminho_videos)
+
+                    #sucesso
+                    progress_bar.visible = False
+                    status_text.value = "Dowload comcluido com sucesso."
+                    status_text.color = ft.Color.GREEN
+                    page.update
+                else:
+                    progress_bar.visible = False
+                    status_text.value = "Não foi possivel baixar o video"
+                    status_text.color = ft.Colors.RED
+                    page.update
+
 
             except Exception as e:
                 progress_bar.visible = False
@@ -110,6 +124,105 @@ def main(page: ft.Page):
         # except e, thread separa para não travar a interface
         threading.Thread(target=download_thread, daemon=True).start()
 
+    def extrair_audio(e):
+        if not url.value.strip():
+            status_text.value = "Favor inserir uma URL"
+            status_text.color = ft.Colors.ORANGE
+            page.update()
+
+        def download_thread():
+            try:
+                progress_bar = True
+                status_text.value = "Analisando.."
+                status_text.color = ft.Colors.BLUE
+                page.updadte()
+
+                # criar objeto
+                yt = Youtube(url.value.strip())
+
+                # mostrar informações
+                mostrar_info_videos(yt)
+
+                # inicio  dowload do audio
+                status_text.value = f"Extraindo audio de {yt.title}..."
+                page.update()
+
+                stream = yt.stream.filter(only_audio=True).first()
+                if stream:
+                    audio_file = stream.download(caminho_audios)
+
+                    # renomeia para mp3
+                    base, extens = os.path.splitext(audio_file)
+                    novo_audio = base + ".mp3"
+                    os.rename(audio_file. novo_audio)
+
+                    # sucesso
+                    progress_bar.visible = False
+                    status_text.value = f"Audio salvo com sucesso {os.path.basename(novo_audio)}"
+                    status_text.color = ft.Colors.GREEN
+                    page.update()
+                else:
+                    progress_bar.visible = False
+                    status_text.valaue = "Não foi possivel baixar o áudio."
+                    page.upfdate()
+
+            except Exception as e:
+                progress_bar.value = False
+                status_text.value = f"Erro: {str(e)}."
+                status_text.color = ft.Colors.RED
+                page.update()
+            
+        # excutar em thread separada para não travar a intwrface
+        threading.Thread(target=download_thread, deemon=True).start()
+
+    def limpar_campos(e):
+        url.value = ""
+        video_info.visible = False
+        progress_bar.visible = False
+        status_text.value = ""
+        page.update()
+
+
+        video_btn = ft.ElevatedButton(
+        text="Baixar video",
+        width=150,
+        style=ft.ButtonStyle(
+        on_click=baixar_video,
+        bgcolor=ft.Colors.BLUE,
+        color=ft.Color.WHITRE,
+        elevation=ft.TextStyle(size=18)
+        )
+    )
+        audio_btn = ft.ElevatedButton(
+        text="Baixar audio",
+        width=150,
+        style=ft.ButtonStyle(
+        on_click=extrair_audio,
+        bgcolor=ft.Colors.BLUE,
+        color=ft.Color.WHITRE,
+        elevation=ft.TextStyle(size=18)
+        )
+    )
+    clear_btn = ft.IconBtton(
+        on_click=limpar_campos,
+        style=ft.BottonStyle(
+            bgcolor=ft.Colors.GREEN,
+            color=ft.Colors.WHITE,
+            elevation=1
+        )
+    )
+    linha_url = ft.row(
+        [url, clear_bnt],
+        spacing=10,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER
+    )
+    botoes = ft.Row(
+        [video_btn, audio_btn],
+        spacing=15,
+        alignment=ft.MainAxisAlignment.CENTER,
+        vertical_alignment=ft.CrossAxisAlignment.CENTER
+    )
     page.add(
         ft.SafeArea(
             ft.Container(
