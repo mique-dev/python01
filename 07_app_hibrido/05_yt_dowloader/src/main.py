@@ -1,6 +1,7 @@
 import flet as ft
-from pytubefix import Youtube
+from pytubefix import YouTube
 
+import os
 import threading
 
 
@@ -25,14 +26,14 @@ def main(page: ft.Page):
 
     base_path = os.path.dirname(__file__)
     logo_path = os.path.join(base_path, "assets", "youtube.png")
-    logo.cabbecalho = ft.Image(src=logo_path, width=300, height=200)
+    logo_cabecalho = ft.Image(src=logo_path, width=300, height=200)
 
     # componente para mostrar infor,açoes do video
     video_info = ft.Container(
         content=ft.Column([]),
         visible=False,
         padding=10,
-        bgclor=ft.colors.BLUE_GREY_50,
+        bgcolor=ft.Colors.BLUE_GREY_50,
         border_radius=10,
         width=400
     )
@@ -52,7 +53,7 @@ def main(page: ft.Page):
         text_align=ft.TextAlign.CENTER
     )
     
-    def mostrar_info_video(yt):
+    def mostrar_info_videos(yt):
         try:
             # limpar o cotainer
             vido_info.content.controls.clear()
@@ -89,8 +90,8 @@ def main(page: ft.Page):
                 status_text.color = ft.Colors.BLUE
 
                 # criar objeto Youtube
-                yt = Youtube(url.value.strip())
-                mostrar_info_video(yt)
+                yt = YouTube(url.value.strip())
+                mostrar_info_videos(yt)
 
                 # inicio do dowload
                 status_text.value = f"Baixando video... {yt.title}"
@@ -99,14 +100,13 @@ def main(page: ft.Page):
                 # pega a maior resolução possivel
                 stream = yt.streams.get_highest_resolution()
 
-                # TODO: fazer if else do stream
-                if stream:
-                    stream.dowload(cminho_videos)
 
+                if stream:
+                    stream.download(caminho_videos)
                     #sucesso
                     progress_bar.visible = False
-                    status_text.value = "Dowload comcluido com sucesso."
-                    status_text.color = ft.Color.GREEN
+                    status_text.value = "Download comcluido com sucesso."
+                    status_text.color = ft.Colors.GREEN
                     page.update
                 else:
                     progress_bar.visible = False
@@ -138,7 +138,7 @@ def main(page: ft.Page):
                 page.updadte()
 
                 # criar objeto
-                yt = Youtube(url.value.strip())
+                yt = YouTube(url.value.strip())
 
                 # mostrar informações
                 mostrar_info_videos(yt)
@@ -147,7 +147,7 @@ def main(page: ft.Page):
                 status_text.value = f"Extraindo audio de {yt.title}..."
                 page.update()
 
-                stream = yt.stream.filter(only_audio=True).first()
+                stream = yt.streams.filter(only_audio=True).first()
                 if stream:
                     audio_file = stream.download(caminho_audios)
 
@@ -173,7 +173,7 @@ def main(page: ft.Page):
                 page.update()
             
         # excutar em thread separada para não travar a intwrface
-        threading.Thread(target=download_thread, deemon=True).start()
+        threading.Thread(target=download_thread, daemon=True).start()
 
     def limpar_campos(e):
         url.value = ""
@@ -183,36 +183,39 @@ def main(page: ft.Page):
         page.update()
 
 
-        video_btn = ft.ElevatedButton(
+    video_btn = ft.ElevatedButton(
         text="Baixar video",
         width=150,
-        style=ft.ButtonStyle(
         on_click=baixar_video,
-        bgcolor=ft.Colors.BLUE,
-        color=ft.Color.WHITRE,
-        elevation=ft.TextStyle(size=18)
+        style=ft.ButtonStyle(
+         
+            bgcolor=ft.Colors.BLUE,
+            color=ft.Colors.WHITE,
+            elevation=ft.TextStyle(size=18)
         )
     )
-        audio_btn = ft.ElevatedButton(
+    audio_btn = ft.ElevatedButton(
         text="Baixar audio",
         width=150,
-        style=ft.ButtonStyle(
         on_click=extrair_audio,
-        bgcolor=ft.Colors.BLUE,
-        color=ft.Color.WHITRE,
-        elevation=ft.TextStyle(size=18)
+        style=ft.ButtonStyle(
+            
+            bgcolor=ft.Colors.BLUE,
+            color=ft.Colors.WHITE,
+            elevation=ft.TextStyle(size=18)
         )
     )
-    clear_btn = ft.IconBtton(
+    clear_btn = ft.IconButton(
         on_click=limpar_campos,
-        style=ft.BottonStyle(
+        style=ft.ButtonStyle(
+            
             bgcolor=ft.Colors.GREEN,
             color=ft.Colors.WHITE,
             elevation=1
         )
     )
-    linha_url = ft.row(
-        [url, clear_bnt],
+    linha_url = ft.Row(
+        [url, clear_btn],
         spacing=10,
         alignment=ft.MainAxisAlignment.CENTER,
         vertical_alignment=ft.CrossAxisAlignment.CENTER
@@ -224,12 +227,18 @@ def main(page: ft.Page):
         vertical_alignment=ft.CrossAxisAlignment.CENTER
     )
     page.add(
-        ft.SafeArea(
-            ft.Container(
-                counter,
-                alignment=ft.alignment.center,
-            ),
-            expand=True,
+        ft.Column(
+            [
+                logo_cabecalho , linha_url,
+                ft.Divider(height=0, color=ft.Colors.TRANSPARENT),
+                video_info, botoes,
+                ft.Divider(height=10, color=ft.Colors.TRANSPARENT),
+                progress_bar, status_text
+            ],
+            spacing=15,
+            alignment=ft.CrossAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            scroll=ft.ScrollMode.AUTO,
         )
     )
 
